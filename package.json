@@ -16,5 +16,8 @@
     "interview",
     "openai"
   ],
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  }
 }
