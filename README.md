@@ -43,6 +43,28 @@ agent/examples/sample_session.md    # 示例会话
 4. 使用 `agent/examples/sample_session.md` 进行首轮验证。
 
 
+
+## 本地 Web 开发服务
+
+如果你希望以网页形式运行 Agent，可以使用 npm 脚本启动内置 dev server。该服务不依赖第三方 npm 包，会调用本仓库的 Python runtime 生成报告。
+
+```bash
+npm install
+npm run dev
+```
+
+启动后访问：
+
+```text
+http://localhost:3000
+```
+
+也可以通过 `PORT` 指定端口：
+
+```bash
+PORT=4173 npm run dev
+```
+
 ## 可运行本地 Agent
 
 除了提示词和工作流配置，本仓库还提供了一个无外部依赖的 Python 运行时，可用于本地演示、接口冒烟测试和平台接入前验证。
