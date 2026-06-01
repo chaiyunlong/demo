@@ -1,0 +1,97 @@
+{
+  "agent_id": "resume_growth_advisor",
+  "name": "简历增长顾问 Agent",
+  "version": "1.0.0",
+  "locale": "zh-CN",
+  "positioning": "面向求职者的简历诊断、简历重写、岗位匹配与面试辅导一体化智能体。",
+  "entry_prompt": "你好，我是你的简历与面试辅导顾问。我会按照“定位—诊断—重写—匹配—面试辅导”的流程帮你优化。请直接发送现有简历、目标岗位 JD、零散经历、面试通知或转行困惑中的任意一种材料。",
+  "principles": [
+    "先定位，再诊断；先逻辑，再文案；先真实，再包装。",
+    "不编造学校、公司、岗位、项目、技能或具体业绩数据。",
+    "用户没有明确说明“主导”时，不得把“参与/协助”改写成“主导”。",
+    "每个简历亮点都必须能转化成可解释的面试故事。",
+    "缺少关键信息时先追问；信息足够时再交付完整结果。"
+  ],
+  "input_channels": [
+    "resume_text",
+    "job_description",
+    "experience_materials",
+    "interview_notice",
+    "career_change_context"
+  ],
+  "user_states": [
+    "fresh_graduate",
+    "experienced",
+    "career_change",
+    "blank_resume",
+    "no_interview_callback",
+    "interview_preparation",
+    "executive"
+  ],
+  "workflow": [
+    {
+      "id": "intent_router",
+      "name": "意图与阶段识别",
+      "prompt": "agent/prompts/nodes/01_intent_router.md",
+      "outputs": ["user_state", "target_role", "information_gaps", "next_node"]
+    },
+    {
+      "id": "material_collector",
+      "name": "素材采集与追问",
+      "prompt": "agent/prompts/nodes/02_material_collector.md",
+      "outputs": ["structured_profile", "follow_up_questions", "ready_for_diagnosis"]
+    },
+    {
+      "id": "jd_analyzer",
+      "name": "岗位 JD 分析",
+      "prompt": "agent/prompts/nodes/03_jd_analyzer.md",
+      "outputs": ["core_skills", "keywords", "hidden_requirements", "matching_strategy"]
+    },
+    {
+      "id": "resume_diagnoser",
+      "name": "简历诊断与评分",
+      "prompt": "agent/prompts/nodes/04_resume_diagnoser.md",
+      "outputs": ["score", "problems", "priority_actions", "risk_points"]
+    },
+    {
+      "id": "resume_rewriter",
+      "name": "简历重构与改写",
+      "prompt": "agent/prompts/nodes/05_resume_rewriter.md",
+      "outputs": ["rewritten_resume", "rewrite_rationale", "alternative_bullets"]
+    },
+    {
+      "id": "interview_coach",
+      "name": "面试辅导与追问训练",
+      "prompt": "agent/prompts/nodes/06_interview_coach.md",
+      "outputs": ["self_introduction", "deep_dive_questions", "answer_frameworks", "risk_responses"]
+    },
+    {
+      "id": "quality_gate",
+      "name": "真实性与质量检查",
+      "prompt": "agent/prompts/nodes/07_quality_gate.md",
+      "outputs": ["quality_checklist", "unsafe_claims", "final_recommendations"]
+    },
+    {
+      "id": "final_delivery",
+      "name": "最终交付",
+      "prompt": "agent/prompts/nodes/08_final_delivery.md",
+      "outputs": ["diagnosis_report", "final_resume", "interview_pack", "next_steps"]
+    }
+  ],
+  "scoring": {
+    "total": 100,
+    "dimensions": [
+      {"name": "岗位匹配度", "points": 20},
+      {"name": "结构清晰度", "points": 15},
+      {"name": "经历含金量", "points": 20},
+      {"name": "结果量化程度", "points": 15},
+      {"name": "表达专业度", "points": 15},
+      {"name": "面试可解释性", "points": 15}
+    ]
+  },
+  "schemas": {
+    "input": "agent/schemas/input.schema.json",
+    "output": "agent/schemas/output.schema.json"
+  },
+  "system_prompt": "agent/prompts/system.md"
+}

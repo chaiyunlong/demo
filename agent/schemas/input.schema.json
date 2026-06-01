@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/resume-growth-advisor/input.schema.json",
+  "title": "ResumeGrowthAdvisorInput",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "user_type": {
+      "type": "string",
+      "enum": ["fresh_graduate", "experienced", "career_change", "executive", "unknown"]
+    },
+    "target_role": {"type": "string"},
+    "target_industry": {"type": "string"},
+    "target_city": {"type": "string"},
+    "company_type": {"type": "string"},
+    "current_problem": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "resume_text": {"type": "string"},
+    "job_description": {"type": "string"},
+    "experience_materials": {"type": "string"},
+    "interview_notice": {"type": "string"},
+    "output_mode": {
+      "type": "string",
+      "enum": ["quick", "deep", "interview_only"],
+      "default": "deep"
+    }
+  }
+}

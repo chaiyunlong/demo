@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/resume-growth-advisor/output.schema.json",
+  "title": "ResumeGrowthAdvisorOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile_analysis", "resume_diagnosis", "rewritten_resume", "interview_coaching", "next_steps"],
+  "properties": {
+    "profile_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user_state": {"type": "string"},
+        "target_role": {"type": "string"},
+        "main_challenge": {"type": "string"},
+        "optimization_strategy": {"type": "string"}
+      }
+    },
+    "jd_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "core_skills": {"type": "array", "items": {"type": "string"}},
+        "keywords": {"type": "array", "items": {"type": "string"}},
+        "hidden_requirements": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "resume_diagnosis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "score": {"type": "integer", "minimum": 0, "maximum": 100},
+        "problems": {"type": "array", "items": {"type": "string"}},
+        "priority_actions": {"type": "array", "items": {"type": "string"}},
+        "risk_points": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "rewritten_resume": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "profile_summary": {"type": "array", "items": {"type": "string"}},
+        "education": {"type": "array", "items": {"type": "string"}},
+        "work_experience": {"type": "array", "items": {"type": "string"}},
+        "project_experience": {"type": "array", "items": {"type": "string"}},
+        "skills": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "interview_coaching": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "self_introduction": {"type": "string"},
+        "deep_dive_questions": {"type": "array", "items": {"type": "string"}},
+        "answer_frameworks": {"type": "array", "items": {"type": "string"}},
+        "risk_responses": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "next_steps": {"type": "array", "items": {"type": "string"}}
+  }
+}
