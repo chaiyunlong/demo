@@ -42,6 +42,17 @@ npm run build
 
 构建脚本会把 `public/` 静态资源复制到 `dist/`，`dist/` 是部署输出目录。
 
+
+## 当前验证状态
+
+已在项目根目录执行并验证通过：
+
+```bash
+npm run build
+```
+
+构建输出目录为 `dist/`，该目录由构建过程生成，不提交到 Git。
+
 ## Vercel 部署配置
 
 本项目可以部署到 Vercel。推荐配置如下：
