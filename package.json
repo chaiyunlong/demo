@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "node server/dev-server.js",
-    "test": "python3 -m unittest discover -s tests -v && python3 tools/validate_agent.py"
+    "test": "python3 -m unittest discover -s tests -v && python3 tools/validate_agent.py",
+    "build": "node tools/build_static.js",
+    "preview": "node server/dev-server.js"
   },
   "keywords": [
     "resume",

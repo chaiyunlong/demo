@@ -92,6 +92,28 @@ python3 -m resume_agent --input /tmp/resume_request.json --format json
 运行时会输出求职定位、JD/能力分析、简历诊断、优化后简历、面试辅导包和下一步建议。它不是替代大模型的最终文案能力，而是把 Agent 的路由、诊断、风控和交付结构落成可执行基线。
 
 
+
+## 构建与 Vercel 部署
+
+本项目可以部署到 Vercel：前端是静态页面，构建产物在 `dist/`；`api/analyze.py` 是 Vercel Python Serverless Function，负责调用 Python Agent runtime。
+
+### 本地构建
+
+```bash
+npm run build
+```
+
+### Vercel 配置
+
+```text
+Framework Preset: Other
+Build Command: npm run build
+Output Directory: dist
+Install Command: npm install
+```
+
+仓库已经包含 `vercel.json`，其中声明了相同的构建命令、输出目录和 Python API 函数运行时。
+
 ## 接入 OpenAI GPT
 
 > 说明：ChatGPT Plus 是 ChatGPT 网页/App 订阅，不等同于 API Key；本项目的程序化接入使用 OpenAI API。你可以继续使用 Plus 账号体验 ChatGPT，但本地 Agent 调用 GPT 需要在 OpenAI Platform 创建 API Key，并配置 `OPENAI_API_KEY`。
