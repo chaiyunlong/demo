@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .core import ResumeGrowthAdvisor
+from .openai_provider import OpenAIProviderError, OpenAIResponsesClient, load_system_prompt
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -21,6 +22,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format. Defaults to markdown.",
     )
     parser.add_argument("--config", type=Path, help="Optional agent config path.")
+    parser.add_argument(
+        "--engine",
+        choices=("deterministic", "openai"),
+        default="deterministic",
+        help="Use the local deterministic runtime or call OpenAI Responses API.",
+    )
+    parser.add_argument("--model", help="OpenAI model to use when --engine openai is selected.")
     return parser
 
 
@@ -42,10 +50,26 @@ def main(argv: list[str] | None = None) -> int:
     payload = load_payload(args.input)
     advisor = ResumeGrowthAdvisor(args.config) if args.config else ResumeGrowthAdvisor()
     result = advisor.analyze(payload)
+    deterministic_markdown = advisor.render_markdown(result)
+
+    if args.engine == "openai":
+        system_prompt = load_system_prompt(advisor.config["system_prompt"])
+        client = OpenAIResponsesClient.from_env(model=args.model)
+        try:
+            output_text = client.generate_resume_report(system_prompt, payload, deterministic_markdown)
+        except OpenAIProviderError as exc:
+            raise SystemExit(str(exc)) from exc
+
+        if args.format == "json":
+            print(json.dumps({"engine": "openai", "model": client.model, "output_text": output_text}, ensure_ascii=False, indent=2))
+        else:
+            print(output_text)
+        return 0
+
     if args.format == "json":
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print(advisor.render_markdown(result), end="")
+        print(deterministic_markdown, end="")
     return 0
 
 

@@ -69,6 +69,33 @@ python3 -m resume_agent --input /tmp/resume_request.json --format json
 
 运行时会输出求职定位、JD/能力分析、简历诊断、优化后简历、面试辅导包和下一步建议。它不是替代大模型的最终文案能力，而是把 Agent 的路由、诊断、风控和交付结构落成可执行基线。
 
+
+## 接入 OpenAI GPT
+
+> 说明：ChatGPT Plus 是 ChatGPT 网页/App 订阅，不等同于 API Key；本项目的程序化接入使用 OpenAI API。你可以继续使用 Plus 账号体验 ChatGPT，但本地 Agent 调用 GPT 需要在 OpenAI Platform 创建 API Key，并配置 `OPENAI_API_KEY`。
+
+### 配置 API Key
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+# 可选：覆盖默认模型
+export OPENAI_MODEL="gpt-5.2"
+```
+
+### 使用 GPT 生成最终报告
+
+```bash
+python3 -m resume_agent --input /tmp/resume_request.json --engine openai --format markdown
+```
+
+### 使用指定模型
+
+```bash
+python3 -m resume_agent --input /tmp/resume_request.json --engine openai --model gpt-5.2 --format json
+```
+
+OpenAI 模式会先运行本地确定性诊断，生成基线报告，再把用户输入、系统提示词和基线报告发送到 Responses API，让 GPT 在真实性边界内生成更自然的最终交付稿。
+
 ## 本地校验
 
 运行以下命令检查配置文件、提示词路径和 JSON Schema 是否有效：

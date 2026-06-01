@@ -43,6 +43,18 @@ class ResumeGrowthAdvisorTests(unittest.TestCase):
         result = json.loads(completed.stdout)
         self.assertEqual(result["profile_analysis"]["target_role"], "数据分析")
 
+    def test_cli_openai_engine_without_key_exits_with_message(self):
+        payload = json.dumps({"target_role": "用户运营", "experience_materials": "维护社群。"})
+        completed = subprocess.run(
+            [sys.executable, "-m", "resume_agent", "--engine", "openai"],
+            input=payload,
+            text=True,
+            capture_output=True,
+            env={"PYTHONPATH": "."},
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("OPENAI_API_KEY is not set", completed.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
