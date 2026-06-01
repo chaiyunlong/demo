@@ -42,6 +42,33 @@ agent/examples/sample_session.md    # 示例会话
 3. 将 `agent/schemas/input.schema.json` 和 `agent/schemas/output.schema.json` 作为接口约束。
 4. 使用 `agent/examples/sample_session.md` 进行首轮验证。
 
+
+## 可运行本地 Agent
+
+除了提示词和工作流配置，本仓库还提供了一个无外部依赖的 Python 运行时，可用于本地演示、接口冒烟测试和平台接入前验证。
+
+### 运行示例
+
+```bash
+cat > /tmp/resume_request.json <<'JSON'
+{
+  "user_type": "fresh_graduate",
+  "target_role": "用户运营",
+  "experience_materials": "维护20个社群，每个约200人；试听课活动单场300人报名；写过15篇公众号。"
+}
+JSON
+
+python3 -m resume_agent --input /tmp/resume_request.json --format markdown
+```
+
+### JSON 输出
+
+```bash
+python3 -m resume_agent --input /tmp/resume_request.json --format json
+```
+
+运行时会输出求职定位、JD/能力分析、简历诊断、优化后简历、面试辅导包和下一步建议。它不是替代大模型的最终文案能力，而是把 Agent 的路由、诊断、风控和交付结构落成可执行基线。
+
 ## 本地校验
 
 运行以下命令检查配置文件、提示词路径和 JSON Schema 是否有效：
