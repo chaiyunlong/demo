@@ -1,0 +1,23 @@
+{
+  "name": "resume-growth-advisor-agent",
+  "version": "1.0.0",
+  "description": "可运行的简历增长顾问 Agent，本地 Web UI + Python runtime。",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/dev-server.js",
+    "test": "python3 -m unittest discover -s tests -v && python3 tools/validate_agent.py",
+    "build": "node tools/build_static.js",
+    "preview": "node server/dev-server.js"
+  },
+  "keywords": [
+    "resume",
+    "agent",
+    "interview",
+    "openai"
+  ],
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  }
+}

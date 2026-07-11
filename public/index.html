@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>简历增长顾问 Agent</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101114;
+        --panel: #181a20;
+        --panel-2: #20232b;
+        --text: #f6f2e8;
+        --muted: #b8b0a2;
+        --accent: #f4b83f;
+        --accent-2: #ffdc7a;
+        --danger: #ff6b6b;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        background: radial-gradient(circle at top left, rgba(244, 184, 63, 0.16), transparent 34%), var(--bg);
+        color: var(--text);
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 36px 0;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(32px, 5vw, 62px);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.7;
+        margin: 0;
+      }
+
+      .badge {
+        display: inline-flex;
+        width: fit-content;
+        margin-bottom: 18px;
+        padding: 8px 12px;
+        border: 1px solid rgba(244, 184, 63, 0.35);
+        border-radius: 999px;
+        color: var(--accent-2);
+        background: rgba(244, 184, 63, 0.08);
+        font-size: 13px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 18px;
+      }
+
+      .card {
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02)), var(--panel);
+        box-shadow: 0 20px 80px rgba(0,0,0,0.28);
+        padding: 20px;
+      }
+
+      label {
+        display: block;
+        margin: 14px 0 8px;
+        color: var(--accent-2);
+        font-weight: 700;
+      }
+
+      input, textarea, select {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        background: var(--panel-2);
+        color: var(--text);
+        padding: 12px 14px;
+        font: inherit;
+        outline: none;
+      }
+
+      textarea { min-height: 130px; resize: vertical; }
+      input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      button {
+        margin-top: 16px;
+        width: 100%;
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 18px;
+        color: #1b1608;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      button:disabled { cursor: wait; opacity: 0.65; }
+
+      .output {
+        min-height: 640px;
+        white-space: pre-wrap;
+        line-height: 1.65;
+        color: #eee7d8;
+      }
+
+      .hint { color: var(--muted); font-size: 13px; line-height: 1.6; }
+      .error { color: var(--danger); }
+
+      @media (max-width: 860px) {
+        header, .grid, .row { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <section>
+          <span class="badge">Resume Growth Advisor Agent</span>
+          <h1>简历增长顾问</h1>
+          <p class="lead">输入目标岗位、JD 或零散经历，一键生成简历诊断、改写建议与面试辅导包。</p>
+        </section>
+        <p class="lead">本地 Web UI 调用 Python Agent runtime，适合演示、测试和继续接入 OpenAI 模式。</p>
+      </header>
+
+      <section class="grid">
+        <form class="card" id="advisor-form">
+          <div class="row">
+            <div>
+              <label for="user_type">用户类型</label>
+              <select id="user_type" name="user_type">
+                <option value="fresh_graduate">应届生</option>
+                <option value="experienced">社招</option>
+                <option value="career_change">转行</option>
+                <option value="executive">管理岗</option>
+                <option value="unknown">不确定</option>
+              </select>
+            </div>
+            <div>
+              <label for="target_role">目标岗位</label>
+              <input id="target_role" name="target_role" value="用户运营" />
+            </div>
+          </div>
+
+          <label for="job_description">岗位 JD</label>
+          <textarea id="job_description" name="job_description" placeholder="粘贴岗位描述，可为空"></textarea>
+
+          <label for="resume_text">现有简历</label>
+          <textarea id="resume_text" name="resume_text" placeholder="粘贴简历文本，可为空"></textarea>
+
+          <label for="experience_materials">经历素材</label>
+          <textarea id="experience_materials" name="experience_materials">维护20个社群，每个约200人；试听课活动单场300人报名；写过15篇公众号。</textarea>
+
+          <button type="submit" id="submit-button">生成诊断与面试辅导</button>
+          <p class="hint">提示：当前 dev server 使用确定性本地 Agent。如需 GPT 增强，可使用 CLI 的 <code>--engine openai</code>。</p>
+        </form>
+
+        <section class="card">
+          <div id="status" class="hint">等待输入...</div>
+          <pre id="output" class="output"></pre>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector('#advisor-form');
+      const output = document.querySelector('#output');
+      const status = document.querySelector('#status');
+      const button = document.querySelector('#submit-button');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        button.disabled = true;
+        status.textContent = '正在生成...';
+        status.className = 'hint';
+        output.textContent = '';
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || '生成失败');
+          status.textContent = '已生成';
+          output.textContent = data.markdown;
+        } catch (error) {
+          status.textContent = error.message;
+          status.className = 'hint error';
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
