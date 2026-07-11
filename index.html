@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>霓虹裂隙 · 创新贪吃蛇</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #090b1a;
+      --bg-2: #110d2e;
+      --neon-cyan: #39f7ff;
+      --neon-pink: #ff4fcf;
+      --neon-green: #7dff8a;
+      --text: #edf6ff;
+      --warning: #ffd66e;
+      --danger: #ff5f7e;
+      --panel: rgba(18, 18, 35, 0.65);
+      --panel-border: rgba(92, 240, 255, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'Noto Sans SC', system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(1200px 500px at 10% 0%, #2627a0 0%, transparent 45%),
+        radial-gradient(900px 450px at 100% 80%, #7a1f8a 0%, transparent 55%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.025) 0px,
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 2px,
+        transparent 4px
+      );
+      mix-blend-mode: soft-light;
+    }
+
+    .app {
+      width: min(95vw, 1080px);
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .game-shell {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 10px 24px rgba(0, 0, 0, 0.35),
+        0 0 28px rgba(56, 201, 255, 0.15);
+    }
+
+    .panel {
+      padding: 18px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(57, 247, 255, 0.45);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #c4d8ff;
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(138, 237, 255, 0.35);
+      background: rgba(12, 20, 48, 0.52);
+    }
+
+    .metric .label {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 6px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.16rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+
+    .section-title {
+      margin: 4px 0 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9db4df;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #d8e4ff;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    li + li { margin-top: 4px; }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      border: 1px solid rgba(255, 214, 110, 0.4);
+      background: rgba(255, 214, 110, 0.12);
+      color: #ffe9b3;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .status.danger {
+      border-color: rgba(255, 95, 126, 0.52);
+      background: rgba(255, 95, 126, 0.15);
+      color: #ffd2dc;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:active { transform: translateY(1px) scale(0.99); }
+
+    .primary {
+      background: linear-gradient(135deg, #0fc0c9, #5f5bf4);
+      box-shadow: 0 8px 18px rgba(46, 145, 255, 0.35);
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, #a04cf5, #f44ea8);
+      box-shadow: 0 8px 18px rgba(227, 82, 212, 0.35);
+    }
+
+    .game-shell {
+      padding: 12px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    #game {
+      width: min(78vw, 720px);
+      height: min(78vw, 720px);
+      max-width: 720px;
+      max-height: 720px;
+      border-radius: 14px;
+      border: 1px solid rgba(161, 246, 255, 0.5);
+      box-shadow:
+        inset 0 0 36px rgba(24, 145, 235, 0.22),
+        0 0 24px rgba(57, 247, 255, 0.16);
+      background: linear-gradient(145deg, rgba(6, 16, 38, 0.95), rgba(15, 14, 46, 0.92));
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 12px;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(9, 12, 30, 0.55), rgba(4, 8, 24, 0.88));
+    }
+
+    .overlay-card {
+      pointer-events: all;
+      padding: 18px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(126, 245, 255, 0.45);
+      background: rgba(12, 18, 44, 0.82);
+      box-shadow: 0 0 24px rgba(57, 247, 255, 0.2);
+      max-width: 420px;
+    }
+
+    .overlay-card h2 {
+      margin: 0 0 8px;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-cyan);
+      letter-spacing: 0.06em;
+    }
+
+    .overlay-card p {
+      margin: 0;
+      line-height: 1.6;
+      color: #d8e4ff;
+      font-size: 0.94rem;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+        width: min(95vw, 760px);
+      }
+
+      #game {
+        width: min(94vw, 720px);
+        height: min(94vw, 720px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <div>
+        <h1>Neon Rift Snake</h1>
+        <p class="subtitle">不只是“吃豆变长”——这是一个带有时空裂隙、连击加速和技能系统的创新贪吃蛇。</p>
+      </div>
+
+      <div class="metrics">
+        <article class="metric">
+          <div class="label">分数</div>
+          <div id="score" class="value">0</div>
+        </article>
+        <article class="metric">
+          <div class="label">最高分</div>
+          <div id="best" class="value">0</div>
+        </article>
+        <article class="metric">
+          <div class="label">连击</div>
+          <div id="combo" class="value">x1</div>
+        </article>
+        <article class="metric">
+          <div class="label">速度</div>
+          <div id="speed" class="value">1.0x</div>
+        </article>
+      </div>
+
+      <p class="section-title">创新机制</p>
+      <ul>
+        <li><strong>裂隙传送门：</strong>穿过 A 门会从 B 门出现，保留方向。</li>
+        <li><strong>能量技能（Space）：</strong>短暂“时缓”，降低蛇速，救场反应窗口更大。</li>
+        <li><strong>节奏连击：</strong>连续快速吃食物可叠连击，获得倍数得分和视觉特效。</li>
+        <li><strong>三种食物：</strong>普通、冲刺（临时加分）、相位（可短暂穿身）。</li>
+      </ul>
+
+      <div id="status" class="status">按方向键开始，或点击“新游戏”。</div>
+
+      <div class="buttons">
+        <button id="restart" class="primary">新游戏</button>
+        <button id="pause" class="secondary">暂停 / 继续</button>
+      </div>
+    </section>
+
+    <section class="game-shell">
+      <canvas id="game" width="720" height="720" aria-label="创新贪吃蛇游戏画布"></canvas>
+      <div id="overlay" class="overlay show" aria-live="polite">
+        <div class="overlay-card">
+          <h2>准备进入霓虹裂隙</h2>
+          <p>
+            方向键控制移动，<strong>Space</strong> 触发时缓。<br>
+            吃到 <strong>紫色相位果</strong> 时可短暂穿过自身。<br>
+            快节奏连吃，冲击高连击与高分！
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const comboEl = document.getElementById('combo');
+    const speedEl = document.getElementById('speed');
+    const statusEl = document.getElementById('status');
+    const overlayEl = document.getElementById('overlay');
+
+    const restartBtn = document.getElementById('restart');
+    const pauseBtn = document.getElementById('pause');
+
+    const GRID = 24;
+    const CELL = canvas.width / GRID;
+
+    const FOOD_TYPES = {
+      normal: { color: '#7dff8a', score: 10, label: '普通果' },
+      dash: { color: '#ffb454', score: 20, label: '冲刺果' },
+      phase: { color: '#c16dff', score: 15, label: '相位果' }
+    };
+
+    const BASE_INTERVAL = 128;
+
+    let snake;
+    let direction;
+    let nextDirection;
+    let food;
+    let portals;
+    let score;
+    let best;
+    let combo;
+    let lastEatTime;
+    let phaseModeUntil;
+    let dashBonusUntil;
+    let slowMoUntil;
+    let running;
+    let paused;
+    let dead;
+    let lastTick;
+    let accumulator;
+
+    function randInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function samePos(a, b) {
+      return a.x === b.x && a.y === b.y;
+    }
+
+    function randomFreeCell(exclusions = []) {
+      let p;
+      let safe = 0;
+      do {
+        p = { x: randInt(GRID), y: randInt(GRID) };
+        safe += 1;
+        if (safe > 5000) return { x: 0, y: 0 };
+      } while (
+        snake.some(s => samePos(s, p)) ||
+        exclusions.some(e => samePos(e, p))
+      );
+      return p;
+    }
+
+    function spawnFood() {
+      const roll = Math.random();
+      const type = roll < 0.65 ? 'normal' : roll < 0.86 ? 'dash' : 'phase';
+      const pos = randomFreeCell([portals.a, portals.b]);
+      food = { ...pos, type };
+    }
+
+    function spawnPortals() {
+      const a = randomFreeCell();
+      const b = randomFreeCell([a]);
+      portals = { a, b, pulse: 0 };
+    }
+
+    function initGame() {
+      snake = [
+        { x: 12, y: 12 },
+        { x: 11, y: 12 },
+        { x: 10, y: 12 }
+      ];
+      direction = { x: 1, y: 0 };
+      nextDirection = { x: 1, y: 0 };
+      score = 0;
+      combo = 1;
+      lastEatTime = 0;
+      phaseModeUntil = 0;
+      dashBonusUntil = 0;
+      slowMoUntil = 0;
+      running = false;
+      paused = false;
+      dead = false;
+      accumulator = 0;
+      lastTick = performance.now();
+      best = Number(localStorage.getItem('neonSnakeBest') || 0);
+      bestEl.textContent = best;
+      spawnPortals();
+      spawnFood();
+      status('按方向键开始，Space 启动时缓。');
+      overlayEl.classList.add('show');
+      render(0);
+      syncPanel();
+    }
+
+    function status(text, danger = false) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle('danger', danger);
+    }
+
+    function syncPanel() {
+      scoreEl.textContent = score;
+      comboEl.textContent = `x${combo}`;
+      const speedFactor = (BASE_INTERVAL / currentInterval()).toFixed(1);
+      speedEl.textContent = `${speedFactor}x`;
+    }
+
+    function currentInterval() {
+      const now = performance.now();
+      const baseFast = Math.max(74, BASE_INTERVAL - Math.floor(score / 80) * 6);
+      const comboBuff = Math.min(28, (combo - 1) * 3);
+      const dashBuff = now < dashBonusUntil ? 10 : 0;
+      const slowDebuff = now < slowMoUntil ? 48 : 0;
+      return Math.max(56, baseFast - comboBuff - dashBuff + slowDebuff);
+    }
+
+    function setDirection(dx, dy) {
+      if (!running) {
+        running = true;
+        paused = false;
+        overlayEl.classList.remove('show');
+      }
+      if (dx === -direction.x && dy === -direction.y) return;
+      nextDirection = { x: dx, y: dy };
+    }
+
+    function handleEat(now) {
+      const dt = now - lastEatTime;
+      if (dt < 1800 && lastEatTime !== 0) {
+        combo = Math.min(combo + 1, 9);
+      } else {
+        combo = 1;
+      }
+      lastEatTime = now;
+
+      const foodCfg = FOOD_TYPES[food.type];
+      let gain = foodCfg.score * combo;
+
+      if (food.type === 'dash') {
+        dashBonusUntil = now + 4200;
+        gain += 12;
+        status(`吃到冲刺果，短时加速 + 额外加分！连击 x${combo}`);
+      } else if (food.type === 'phase') {
+        phaseModeUntil = now + 5200;
+        gain += 8;
+        status('相位模式激活：5 秒内可穿过自身！');
+      } else {
+        status(`连击命中！当前连击 x${combo}`);
+      }
+
+      score += gain;
+      if (score > best) {
+        best = score;
+        localStorage.setItem('neonSnakeBest', String(best));
+      }
+      bestEl.textContent = best;
+      spawnFood();
+      if (Math.random() < 0.18) {
+        spawnPortals();
+      }
+    }
+
+    function teleportIfNeeded(head) {
+      if (samePos(head, portals.a)) {
+        head.x = portals.b.x;
+        head.y = portals.b.y;
+      } else if (samePos(head, portals.b)) {
+        head.x = portals.a.x;
+        head.y = portals.a.y;
+      }
+    }
+
+    function update(now) {
+      direction = nextDirection;
+
+      const head = {
+        x: (snake[0].x + direction.x + GRID) % GRID,
+        y: (snake[0].y + direction.y + GRID) % GRID
+      };
+
+      teleportIfNeeded(head);
+
+      const phaseActive = now < phaseModeUntil;
+      if (!phaseActive) {
+        if (snake.some(segment => samePos(segment, head))) {
+          dead = true;
+          running = false;
+          status('撞到自己，游戏结束。按“新游戏”再来一局。', true);
+          overlayEl.classList.add('show');
+          return;
+        }
+      }
+
+      snake.unshift(head);
+
+      if (samePos(head, food)) {
+        handleEat(now);
+      } else {
+        snake.pop();
+      }
+
+      syncPanel();
+    }
+
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(146, 188, 255, 0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < GRID; i++) {
+        const p = i * CELL;
+        ctx.beginPath();
+        ctx.moveTo(p, 0);
+        ctx.lineTo(p, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, p);
+        ctx.lineTo(canvas.width, p);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function drawSnake(now) {
+      const phaseActive = now < phaseModeUntil;
+      snake.forEach((seg, i) => {
+        const x = seg.x * CELL;
+        const y = seg.y * CELL;
+        const inner = i === 0 ? 3 : 4;
+        const glow = i === 0 ? 16 : 10;
+        const hue = phaseActive ? 'rgba(193,109,255,0.95)' : `rgba(${70 + i * 3}, ${220 - i * 2}, 255, 0.92)`;
+
+        ctx.save();
+        ctx.shadowBlur = glow;
+        ctx.shadowColor = phaseActive ? 'rgba(193,109,255,0.9)' : 'rgba(57,247,255,0.7)';
+        ctx.fillStyle = hue;
+        roundRect(x + inner, y + inner, CELL - inner * 2, CELL - inner * 2, 7);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    function drawFood() {
+      const cfg = FOOD_TYPES[food.type];
+      const cx = food.x * CELL + CELL / 2;
+      const cy = food.y * CELL + CELL / 2;
+      const radius = CELL * 0.33;
+
+      ctx.save();
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = cfg.color;
+      const gradient = ctx.createRadialGradient(cx, cy, 3, cx, cy, radius + 3);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(0.3, cfg.color);
+      gradient.addColorStop(1, 'rgba(255,255,255,0.05)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPortals(now) {
+      portals.pulse += 0.06;
+      const pulse = (Math.sin(portals.pulse) + 1) * 0.5;
+      [portals.a, portals.b].forEach((p, idx) => {
+        const cx = p.x * CELL + CELL / 2;
+        const cy = p.y * CELL + CELL / 2;
+        const base = CELL * 0.36;
+
+        ctx.save();
+        ctx.strokeStyle = idx === 0 ? 'rgba(57,247,255,0.95)' : 'rgba(255,79,207,0.95)';
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 22;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.beginPath();
+        ctx.arc(cx, cy, base + pulse * 3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, base * 0.55, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      if (now < slowMoUntil) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(125, 200, 255, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+    }
+
+    function drawHudHints(now) {
+      const phaseLeft = Math.max(0, phaseModeUntil - now);
+      const slowLeft = Math.max(0, slowMoUntil - now);
+      const dashLeft = Math.max(0, dashBonusUntil - now);
+
+      ctx.save();
+      ctx.font = '600 16px Orbitron, Noto Sans SC, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(220, 238, 255, 0.88)';
+      let y = 24;
+      if (phaseLeft > 0) {
+        ctx.fillStyle = 'rgba(210, 160, 255, 0.95)';
+        ctx.fillText(`相位 ${Math.ceil(phaseLeft / 1000)}s`, 14, y);
+        y += 22;
+      }
+      if (dashLeft > 0) {
+        ctx.fillStyle = 'rgba(255, 196, 127, 0.95)';
+        ctx.fillText(`冲刺 ${Math.ceil(dashLeft / 1000)}s`, 14, y);
+        y += 22;
+      }
+      if (slowLeft > 0) {
+        ctx.fillStyle = 'rgba(160, 210, 255, 0.95)';
+        ctx.fillText(`时缓 ${Math.ceil(slowLeft / 1000)}s`, 14, y);
+      }
+      ctx.restore();
+    }
+
+    function render(now) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const bg = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      bg.addColorStop(0, 'rgba(10, 20, 52, 0.96)');
+      bg.addColorStop(1, 'rgba(18, 14, 58, 0.96)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawGrid();
+      drawPortals(now);
+      drawFood();
+      drawSnake(now);
+      drawHudHints(now);
+    }
+
+    function gameLoop(now) {
+      const dt = now - lastTick;
+      lastTick = now;
+
+      if (running && !paused && !dead) {
+        accumulator += dt;
+        const step = currentInterval();
+        while (accumulator >= step) {
+          update(now);
+          accumulator -= step;
+          if (dead) break;
+        }
+      }
+
+      render(now);
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          setDirection(0, -1);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setDirection(0, 1);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          setDirection(-1, 0);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          setDirection(1, 0);
+          break;
+        case ' ': {
+          if (!running || paused || dead) break;
+          const now = performance.now();
+          if (now > slowMoUntil + 6000) {
+            slowMoUntil = now + 2200;
+            status('时缓已启动：2.2 秒反应窗口。');
+          } else {
+            status('时缓冷却中，请稍后再用。');
+          }
+          break;
+        }
+        case 'p':
+        case 'P':
+          if (!dead) {
+            paused = !paused;
+            status(paused ? '游戏已暂停。' : '游戏继续。');
+            overlayEl.classList.toggle('show', paused);
+          }
+          break;
+      }
+    });
+
+    restartBtn.addEventListener('click', () => initGame());
+
+    pauseBtn.addEventListener('click', () => {
+      if (dead) return;
+      paused = !paused;
+      if (paused) {
+        status('游戏已暂停。');
+        overlayEl.classList.add('show');
+      } else {
+        status('游戏继续。');
+        overlayEl.classList.remove('show');
+      }
+    });
+
+    initGame();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
